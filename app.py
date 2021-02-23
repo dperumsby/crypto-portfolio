@@ -18,40 +18,45 @@ portfolio.create_portfolio_table()
 
 
 def display_portfolio():
-    data = portfolio.get_portfolio_data()
-    if data:
-        print(data)
+    coins = portfolio.get_portfolio_data()  # [{'id': 'cardano', 'symbol': 'ada', 'total': 500}, ...]
+    if coins:
+        ids = [coin['id'] for coin in coins]
+        prices = coingecko.get_prices(ids)  # {'cardano': {'usd': 0.935098, 'gbp': 0.66278}, ...}
+        for coin in coins:
+            coin['price'] = prices[coin['id']]
+        print(coins)
     else:
-        print('You\'re portfolio is currently empty.')
+        print('Your portfolio is currently empty.')
 
 
 def new_coin():
-    coin = input('Please provide ticker for coin: ')
-    if coingecko.check(coin):
+    symbol = input('Please provide ticker for coin: ')
+    coin = coingecko.find_coin(symbol)  # {'id': 'cardano', 'symbol': 'ada', 'name': 'Cardano'}
+    if coin:
         amount = input('Please provide initial amount: ')
-        portfolio.add_coin(coin, amount)
+        portfolio.add_coin(coin['id'], coin['symbol'], amount)
         print('Coin added successfully.')
     else: 
         print('Sorry, that coin is not available on CoinGecko, please try again.')
 
 
 def add_to_existing():
-    coin = input('Please provide ticker for coin: ')
-    if portfolio.check_holding(coin):
+    symbol = input('Please provide ticker for coin: ')
+    if portfolio.check_holding(symbol):
         amount = float(input('How many coins would you like to add? '))
-        portfolio.update_total(coin, amount)
+        portfolio.update_total(symbol, amount)
         print('Update successful.')
     else: 
         print('Sorry, that coin is not currently in your portfolio. Please try again.')
 
 
 def delete_coin():
-    coin = input("Please provide ticker for coin: ")
-    if portfolio.check_holding(coin):
+    symbol = input("Please provide ticker for coin: ")
+    if portfolio.check_holding(symbol):
         sure = input('Are you sure you wish to remove this coin? (y/n) ')
         while sure != 'n':
             if sure == 'y':
-                portfolio.remove_coin(coin)
+                portfolio.remove_coin(symbol)
                 print("Coin removed successfully.")
                 break
             else:
