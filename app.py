@@ -24,6 +24,7 @@ def display_portfolio():
         prices = coingecko.get_prices(ids)  # {'cardano': {'usd': 0.935098, 'gbp': 0.66278}, ...}
         for coin in coins:
             coin['price'] = prices[coin['id']]
+            coin['fiat_total'] = {fiat: coin['total'] * coin['price'][fiat] for fiat in coin['price']}
         print(coins)
     else:
         print('Your portfolio is currently empty.')
@@ -72,6 +73,7 @@ user_options = {
     'u': add_to_existing,
     'd': delete_coin
 }
+
 
 def menu():
     user_input = input(USER_MENU)
