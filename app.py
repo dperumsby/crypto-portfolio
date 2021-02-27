@@ -1,3 +1,5 @@
+from tabulate import tabulate
+
 from libs.coingecko import CoinGeckoClient
 from utils.database import PortfolioClient
 
@@ -22,10 +24,17 @@ def display_portfolio():
     if coins:
         ids = [coin['id'] for coin in coins]
         prices = coingecko.get_prices(ids)  # {'cardano': {'usd': 0.935098, 'gbp': 0.66278}, ...}
+        total = {}
         for coin in coins:
-            coin['price'] = prices[coin['id']]
-            coin['fiat_total'] = {fiat: coin['total'] * coin['price'][fiat] for fiat in coin['price']}
-        print(coins)
+            coin['fiat_price'] = prices[coin['id']]
+            coin['fiat_total'] = {fiat: coin['total'] * coin['fiat_price'][fiat] for fiat in coin['fiat_price']}
+            for fiat in coin['fiat_total']:
+                if not total.get(fiat):
+                    total[fiat] = 0
+                total[fiat] += coin['fiat_total'][fiat]
+        table = tabulate(coins, headers='keys', tablefmt='pretty')
+        print(table)
+        print(f'Total: {total}')
     else:
         print('Your portfolio is currently empty.')
 
